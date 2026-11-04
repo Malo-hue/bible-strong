@@ -734,15 +734,18 @@ const loadRegularBibleChapter = async (
       // BHG morphology is optional enrichment; never replace its locale after a load failure.
     }
   }
+  // STEP token ids identify original words independently of translated verse numbering.
+  // Reuse one chapter-wide index for both transliteration and Strong morphology.
+  const alignedTokensById = new Map(
+    Object.values(alignedTokensByVerse).flatMap(tokens =>
+      tokens.flatMap(token => (token.id == null ? [] : [[token.id, token] as const]))
+    )
+  )
   return successResult({
     kind: 'strong',
     ...chapterIdentity,
     verses: verses.map(verse => {
       const verseNumber = Number(verse.Verset)
-      const alignedTokens = alignedTokensByVerse[verseNumber] ?? []
-      const alignedTokensById = new Map(
-        alignedTokens.flatMap(token => (token.id == null ? [] : [[token.id, token] as const]))
-      )
       return {
         ...verse,
         StrongSpans: (spansByVerse[verseNumber] ?? []).map(span => {
