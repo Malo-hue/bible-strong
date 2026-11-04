@@ -645,7 +645,11 @@ describe('BibleContentAccess', () => {
       expect(unaligned?.identities).toEqual([{ kind: 'strong', code: 'G25' }])
     })
 
-    const createShiftedVerseDependencies = (book: number, chapter: number, sourceVerse: number) => {
+    const createShiftedVerseDependencies = (
+      book: number,
+      chapter: number,
+      sourceVerse: number
+    ) => {
       const dependencies = createDependencies()
       dependencies.getChapterVerses.mockResolvedValue([
         { Livre: book, Chapitre: chapter, Verset: 1, Texte: 'Psaume de David' },
@@ -689,28 +693,31 @@ describe('BibleContentAccess', () => {
     it.each([
       { book: 14, chapter: 2, sourceVerse: 2, reference: '2 Chronicles 2' },
       { book: 19, chapter: 3, sourceVerse: 0, reference: 'Psalm 3' },
-    ])('resolves shifted BHG token ids in $reference', async ({ book, chapter, sourceVerse }) => {
-      const dependencies = createShiftedVerseDependencies(book, chapter, sourceVerse)
+    ])(
+      'resolves shifted BHG token ids in $reference',
+      async ({ book, chapter, sourceVerse }) => {
+        const dependencies = createShiftedVerseDependencies(book, chapter, sourceVerse)
 
-      const result = await loadBibleContentChapter(
-        { book, chapter, version: 'LSG', strongMode: 'transliteration' },
-        dependencies
-      )
+        const result = await loadBibleContentChapter(
+          { book, chapter, version: 'LSG', strongMode: 'transliteration' },
+          dependencies
+        )
 
-      expect(result.success).toBe(true)
-      if (!result.success) return
-      const span = result.data.verses[0]?.StrongSpans?.[0]
-      expect(span?.transliteration).toBe('mizmor')
-      expect(span?.morphologies).toEqual([
-        { identity: { kind: 'strong', code: 'H4210' }, codes: ['HNcmsa'] },
-      ])
-      expect(dependencies.loadInterlinearChapterTokens).toHaveBeenCalledWith(
-        'BHG',
-        'fr',
-        book,
-        chapter
-      )
-    })
+        expect(result.success).toBe(true)
+        if (!result.success) return
+        const span = result.data.verses[0]?.StrongSpans?.[0]
+        expect(span?.transliteration).toBe('mizmor')
+        expect(span?.morphologies).toEqual([
+          { identity: { kind: 'strong', code: 'H4210' }, codes: ['HNcmsa'] },
+        ])
+        expect(dependencies.loadInterlinearChapterTokens).toHaveBeenCalledWith(
+          'BHG',
+          'fr',
+          book,
+          chapter
+        )
+      }
+    )
 
     it('preserves morphology without transliteration in shifted Strong numbers mode', async () => {
       const dependencies = createShiftedVerseDependencies(19, 3, 0)
